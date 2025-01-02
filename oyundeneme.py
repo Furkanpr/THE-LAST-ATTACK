@@ -18,19 +18,19 @@ arkaPlanlar = [
     pygame.image.load("arka_plan3.jpg")
 ]
 oyuncuResmi = pygame.image.load("uzay_gemi.png")
-oyuncuMermiResmi = pygame.image.load("oyuncu_mermi.png")
+oyuncuMermiResmi = pygame.image.load("01.png")
 dusmanResmi = pygame.image.load("uzayli.png")
-dusmanMermiResmi = pygame.image.load("uzayli_mermi.png")
+dusmanMermiResmi = pygame.image.load("02.png")
 anaSayfaResmi = pygame.image.load("ana_sayfa.jpg")
 
 # Resmi ekran boyutlarına göre yeniden boyutlandır
 anaSayfaResmi = pygame.transform.scale(anaSayfaResmi, (GENISLIK, YUKSEKLIK))
 
 # Sesler
-pygame.mixer.music.load("arka_plan_sarki.wav")
+pygame.mixer.music.load("MenuMusic.mp3")
 oyuncuAtesSesi = pygame.mixer.Sound("oyuncu_mermi.wav")
 oyuncuVurulmaSesi = pygame.mixer.Sound("oyuncu_vurus.wav")
-dusmanAtesSesi = pygame.mixer.Sound("uzayli_mermi.wav")
+dusmanAtesSesi = pygame.mixer.Sound("uzayli_mermi2.wav")
 dusmanVurulmaSesi = pygame.mixer.Sound("uzayli_vurus.wav")
 
 # Yazı tipi
@@ -98,7 +98,10 @@ def skorlarıKaydet(yeni_skor):
 
 
 def menuGoster():
+    pygame.mixer.music.play(-1)  # Menü müziğini çal
     ekran.blit(anaSayfaResmi, (0, 0))
+
+
 
     # Yazı renkleri ve buton içi rengi
     yazRengi = (0, 0, 0)  # Siyah yazı
@@ -109,28 +112,35 @@ def menuGoster():
     baslaButon = yaziTipi.render("Başla", True, yazRengi)
     skorButon = yaziTipi.render("Skorlar", True, yazRengi)
     cikisButon = yaziTipi.render("Çıkış", True, yazRengi)
+    seceneklerButon = yaziTipi.render("Seçenekler", True, yazRengi)
 
     # Düğmelerin merkez noktalarını ayarla
+
     butonMerkezler = [
-        (GENISLIK // 2 - 200, YUKSEKLIK - 100),
-        (GENISLIK // 2, YUKSEKLIK - 100),
-        (GENISLIK // 2 + 200, YUKSEKLIK - 100),
-    ]
+    (GENISLIK // 2 - 300, YUKSEKLIK - 100),
+    (GENISLIK // 2 - 100, YUKSEKLIK - 100),
+    (GENISLIK // 2 + 100, YUKSEKLIK - 100),
+    (GENISLIK // 2 + 300, YUKSEKLIK - 100),
+]
+
 
     # Butonların dikdörtgenlerini oluştur
     baslaRect = baslaButon.get_rect(center=butonMerkezler[0])
-    skorRect = skorButon.get_rect(center=butonMerkezler[1])
-    cikisRect = cikisButon.get_rect(center=butonMerkezler[2])
+    skorRect = skorButon.get_rect(center=butonMerkezler[2])
+    cikisRect = cikisButon.get_rect(center=butonMerkezler[3])
+    seceneklerRect = seceneklerButon.get_rect(center=butonMerkezler[1])
 
     # Butonları ve çerçevelerini ekrana çiz
-    for rect in [baslaRect, skorRect, cikisRect]:
+    for rect in [baslaRect, seceneklerRect,skorRect, cikisRect ]:
         pygame.draw.rect(ekran, butonRengi, rect.inflate(20, 10))  # Buton arka planı
         pygame.draw.rect(ekran, cerceveRengi, rect.inflate(20, 10), 2)  # Çerçeve
 
     # Yazıları ekrana çiz
     ekran.blit(baslaButon, baslaRect)
+    ekran.blit(seceneklerButon, seceneklerRect)
     ekran.blit(skorButon, skorRect)
     ekran.blit(cikisButon, cikisRect)
+
 
     pygame.display.flip()
 
@@ -146,6 +156,8 @@ def menuGoster():
                     bekleniyor = False
                 elif skorRect.collidepoint(olay.pos):
                     skorlarMenu()
+                elif seceneklerRect.collidepoint(olay.pos):
+                    seceneklerMenu()
                 elif cikisRect.collidepoint(olay.pos):
                     pygame.quit()
                     sys.exit()
@@ -176,6 +188,49 @@ def skorlarMenu():
                 if geriRect.collidepoint(olay.pos):
                     bekleniyor = False
                     menuGoster()
+
+def seceneklerMenu():
+    global sesAcik 
+     # Ses durumu için global değişken
+    bekleniyor = True
+    while bekleniyor:
+        arkaPlan = pygame.image.load('background2.jpg')  # Buraya resminizin yolunu yazın
+        arkaPlan = pygame.transform.scale(arkaPlan, (GENISLIK, YUKSEKLIK))
+        ekran.blit(arkaPlan, (0, 0))
+        # Geri butonu   
+        geriButon = yaziTipi.render("Geri", True, BEYAZ, KIRMIZI)
+        geriRect = geriButon.get_rect(center=(GENISLIK // 2, YUKSEKLIK - 50))
+        ekran.blit(geriButon, geriRect)
+
+        # Ses kapatma/açma butonu
+        sesAcik =True
+        sesDurumu = "Kapat" if sesAcik else "Aç"
+        sesButon = yaziTipi.render(f"Ses: {sesDurumu}", True, BEYAZ, KIRMIZI)
+        sesRect = sesButon.get_rect(center=(GENISLIK // 2, YUKSEKLIK - 150))
+        ekran.blit(sesButon, sesRect)
+
+        pygame.display.flip()
+
+        # Olayları dinleme
+        for olay in pygame.event.get():
+            if olay.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif olay.type == pygame.MOUSEBUTTONDOWN:
+                if geriRect.collidepoint(olay.pos):
+                    bekleniyor = False  # Döngüyü sonlandır
+                    menuGoster()  # Ana menüye dön
+                elif sesRect.collidepoint(olay.pos):
+                    sesAcik = not sesAcik  # Ses durumunu değiştir
+                    if sesAcik:
+                        pygame.mixer.music.unpause()  # Müzik devam etsin
+                    else:
+                        pygame.mixer.music.pause()  # Müzik duraklasın
+
+
+
+
+
 
 # Oyun sonu menüsü
 def oyunSonuGoster(mesaj):
@@ -227,6 +282,7 @@ def oyunSonuGoster(mesaj):
 
 
 # Oyun döngüsü
+
 saat = pygame.time.Clock()
 pygame.mixer.music.play(-1)
 
